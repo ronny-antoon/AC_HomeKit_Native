@@ -1,2 +1,8 @@
 .pio
 cmake-build-esp32thing_plus
+.gitattributes
+.gitignore
+CMakeListsPrivate.txt
+CMakeLists.txt
+.idea
+src/CMakeLists.txt
