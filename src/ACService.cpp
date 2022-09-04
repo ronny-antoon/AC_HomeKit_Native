@@ -7,7 +7,9 @@
 
 ACService::ACService() : Service::HeaterCooler() {
 
-    newState = nullptr;
+    Serial.println("ACService Setup-------------------------------------------");
+
+//    newState = nullptr;
 
     metaIr = new MetaIR();
 
@@ -33,13 +35,15 @@ ACService::ACService() : Service::HeaterCooler() {
     heatingThresholdTemperature = new Characteristic::HeatingThresholdTemperature(30, false); // heating temp
     heatingThresholdTemperature->setRange(16,30,1);
 
+    Serial.println("ACService Setup Finished-------------------------------------------");
 }
 
 boolean ACService::update() {
-    Serial.println("Update requested");
+    Serial.println("Update requested----------------------------------------");
     // send InfraRed for New values
     ACService::syncTargetModeAndCurrent();
     sendTask();
+    Serial.println("Update End----------------------------------------");
     return true;
 }
 

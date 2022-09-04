@@ -6,6 +6,9 @@
 #include "Constants.h"
 
 MetaIR::MetaIR() {
+    Serial.println("MetaIR Setup----------------------------------------");
+
+
     ac = new IRac(constants::IR_LED_PIN);
 //    irrecv = new IRrecv(constants::IR_RECIVER_PIN);
 
@@ -30,10 +33,13 @@ MetaIR::MetaIR() {
 
     ac->sendAc();  // Have the IRac class create and send a message.
 
+    Serial.println("MetaIR Setup finish----------------------------------------");
     //irrecv->enableIRIn();
 }
 
 void MetaIR::sendIR(float degree, bool power,stdAc::swingv_t swingv, stdAc::fanspeed_t fanSpeedMode, stdAc::opmode_t acMode) {
+    Serial.println("MetaIR Send IR----------------------------------------");
+
 
     ac->next.protocol = constants::AC_PROTOCOL;
     ac->next.degrees = degree;
@@ -47,6 +53,7 @@ void MetaIR::sendIR(float degree, bool power,stdAc::swingv_t swingv, stdAc::fans
         ac->sendAc();
     }
 
+    Serial.println("MetaIR Send IR Finish----------------------------------------");
 }
 
 //bool MetaIR::receiveIR(stdAc::state_t *newState) {
