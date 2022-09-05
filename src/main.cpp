@@ -19,8 +19,6 @@ void setup() {
 
     startSerial(constants::baudRate); // Init Serial and begin, for communication between pc and esp32
 
-    Serial.println("Serial Setup-------------------------------------------");
-
     setupHomeSpan(); // setup properties for HomeSpan
 
     homeSpan.begin(Category::AirConditioners, "MetaHouse AC"); // begin with Accessory parent AC
@@ -43,7 +41,6 @@ void setup() {
     *
     */
     acService = new ACService();
-    Serial.println("Serial Start-------------------------------------------");
 }
 
 /** loop function

@@ -12,11 +12,11 @@
 
 class ACService : public  Service::HeaterCooler{
 private:
-    stdAc::state_t *newState;
+    stdAc::state_t newState{};
     void sendTask();
-    void syncTargetModeAndCurrent() const;
+    void updateCurrentCharacteristic() const;
     MetaIR *metaIr;
-    void updateHomeKit(stdAc::state_t *_newState);
+    void updateHomeKit();
 
 public:
 

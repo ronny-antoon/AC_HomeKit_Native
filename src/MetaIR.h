@@ -13,15 +13,15 @@
 
 class MetaIR {
     IRac *ac;
-//    IRrecv *irrecv;
-//    decode_results results;
+    IRrecv *irrecv;
+    decode_results results;
 
 public:
     MetaIR();
 
     void sendIR(float degree, bool power,stdAc::swingv_t swingv, stdAc::fanspeed_t fanSpeedMode, stdAc::opmode_t acMode);
 
-//    bool receiveIR(stdAc::state_t *result);
+    bool receiveIR(stdAc::state_t *newState);
 };
 
 

@@ -7,10 +7,6 @@
 
 ACService::ACService() : Service::HeaterCooler() {
 
-    Serial.println("ACService Setup-------------------------------------------");
-
-//    newState = nullptr;
-
     metaIr = new MetaIR();
 
     active = new Characteristic::Active(0, false);
@@ -35,23 +31,24 @@ ACService::ACService() : Service::HeaterCooler() {
     heatingThresholdTemperature = new Characteristic::HeatingThresholdTemperature(30, false); // heating temp
     heatingThresholdTemperature->setRange(16,30,1);
 
-    Serial.println("ACService Setup Finished-------------------------------------------");
 }
 
 boolean ACService::update() {
-    Serial.println("Update requested----------------------------------------");
     // send InfraRed for New values
-    ACService::syncTargetModeAndCurrent();
+    Serial.println("ACService::update -- got new state from the app.");
+    yield();
+    ACService::updateCurrentCharacteristic();
     sendTask();
-    Serial.println("Update End----------------------------------------");
     return true;
 }
 
 void ACService::loop() {
 
-//    if(metaIr->receiveIR(newState)){
-//        updateHomeKit(newState);
-//    }
+    // TODO: get sensor for current temp at room
+
+    if(metaIr->receiveIR(&newState)){
+        updateHomeKit();
+    }
 
 }
 
@@ -63,11 +60,22 @@ void ACService::sendTask() {
                    getACMode());
 }
 
-void ACService::syncTargetModeAndCurrent() const {
-    if(targetHeaterCoolerState->getNewVal() == constants::HEATING_TARGET_STATE){
+void ACService::updateCurrentCharacteristic() const {
+
+///  update value
+    active->setVal(active->getNewVal());
+    targetHeaterCoolerState->setVal(targetHeaterCoolerState->getNewVal());
+    rotationSpeed->setVal(rotationSpeed->getNewVal());
+    temperatureDisplayUnits->setVal(temperatureDisplayUnits->getNewVal());
+    swingMode->setVal(swingMode->getNewVal());
+    coolingThresholdTemperature->setVal(coolingThresholdTemperature->getNewVal());
+    heatingThresholdTemperature->setVal(heatingThresholdTemperature->getNewVal());
+
+
+    if(targetHeaterCoolerState->getVal() == constants::HEATING_TARGET_STATE){
         currentHeaterCoolerState->setVal(constants::HEATING_CURRENT_STATE);
     }
-    if(targetHeaterCoolerState->getNewVal() == constants::COOLING_TARGET_STATE){
+    if(targetHeaterCoolerState->getVal() == constants::COOLING_TARGET_STATE){
         currentHeaterCoolerState->setVal(constants::COOLING_CURRENT_STATE);
     }
 }
@@ -108,35 +116,39 @@ stdAc::opmode_t ACService::getACMode() {
     return stdAc::opmode_t::kOff;
 }
 
-void ACService::updateHomeKit(stdAc::state_t *_newState){
-    // TODO: convert from newState to homekit characteristics
-    if(_newState->power) {
+void ACService::updateHomeKit(){
+    Serial.println("ACService::updateHomeKit -- got new state from IR controller, update homekit characteristics");
+    yield();
+    if(newState.power) {
         // MODE
-        if (_newState->mode == stdAc::opmode_t::kCool)
+        if (newState.mode == stdAc::opmode_t::kCool) {
             targetHeaterCoolerState->setVal(constants::COOLING_TARGET_STATE);
-        else if (_newState->mode == stdAc::opmode_t::kHeat)
+            currentHeaterCoolerState->setVal(constants::COOLING_CURRENT_STATE);
+        }
+        else if (newState.mode == stdAc::opmode_t::kHeat) {
             targetHeaterCoolerState->setVal(constants::HEATING_TARGET_STATE);
-        syncTargetModeAndCurrent();
+            currentHeaterCoolerState->setVal(constants::HEATING_CURRENT_STATE);
+        }
         // end MODE
 
         // TEMP
         if (currentHeaterCoolerState->getVal() == constants::COOLING_CURRENT_STATE)
-            coolingThresholdTemperature->setVal(_newState->degrees);
+            coolingThresholdTemperature->setVal(newState.degrees);
         else
-            heatingThresholdTemperature->setVal(_newState->degrees);
+            heatingThresholdTemperature->setVal(newState.degrees);
         // end TEMP
 
         // SWING
-        if (_newState->swingv == stdAc::swingv_t::kAuto)
+        if (newState.swingv == stdAc::swingv_t::kAuto)
             swingMode->setVal(1);
         else
             swingMode->setVal(0);
         // end SWING
 
         // FANSPEED
-        if(_newState->fanspeed == stdAc::fanspeed_t::kLow)
+        if(newState.fanspeed == stdAc::fanspeed_t::kLow)
             rotationSpeed->setVal(20);
-        else if(_newState->fanspeed == stdAc::fanspeed_t::kHigh)
+        else if(newState.fanspeed == stdAc::fanspeed_t::kHigh)
             rotationSpeed->setVal(80);
         else
             rotationSpeed->setVal(50);
